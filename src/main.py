@@ -17,6 +17,7 @@ import gc
 import pyb
 import cotask
 import task_share
+import time
 
 from positioncontrol import PositionControlTask
 from motordriver import MotorDriver
@@ -28,13 +29,6 @@ def system_1 ():
     """!
     Task which puts things into a share and a queue.
     """
-    
-    counter = 0
-
-
-    control_A.set_point()
-    
-    control_A.set_gain()
     
     while True:
     
@@ -52,21 +46,30 @@ def system_1 ():
         if Position_A.full() == False:
             # Creates a list of Time data
             Position_A.put(enc_A.get_position())
+        print('sys 1')
         yield (0)
-
-
+        
 def system_2 ():
-    """!
-    Task which takes things out of a queue and share to display.
-    """
-    while True:
-        # Show everything currently in the queue and the value in the share
-        print ("Share: {:}, Queue: ".format (share0.get ()), end='');
-        while q0.any ():
-            print ("{:} ".format (q0.get ()), end='')
-        print ('')
+    
 
+    while True:
+    
+        # Runs position control function from positioncontrol.py
+        control_B.position_control()
+        
+        ## Current time the data is collected
+        current_time_B = time.ticks_diff(time.ticks_ms(), start_time)
+        
+        ## Updates Current Time
+        if time_list_B.full() == False:
+            # Creates a list of Time data
+            time_list_B.put(current_time_B)
+                
+        if Position_B.full() == False:
+            # Creates a list of Time data
+            Position_B.put(enc_B.get_position())
         yield (0)
+
 def user_task ():
     """!
     Task which puts things into a share and a queue.
@@ -100,7 +103,17 @@ if __name__ == "__main__":
 
     ## Creates the position control object for system B
     control_B = PositionControlTask(motor_B, enc_B)
-
+    
+    print('motor 1')
+    control_A.set_point()
+        
+    control_A.set_gain()
+    
+    print('motor 2')
+    control_B.set_point()
+        
+    control_B.set_gain()
+    
     # Initilzing Share Objects
     
     # Shares
@@ -110,20 +123,23 @@ if __name__ == "__main__":
     #def __init__ (self, type_code, size, thread_protect = True, 
     #              overwrite = False, name = None):
     ## Creates the position Queue object
-    Setpos_A = task_share.Queue(i, True, name = 008)
+    Setpos_A = task_share.Queue('i', True, name = 008)
     ## Creates the position Queue object
-    Position_A = task_share.Queue(i, size = 100, thread_protect = False,
+    Position_A = task_share.Queue('i', size = 100, thread_protect = False,
                                   overwrite = False, name = 001)
 
     ## Creates the position share object
-    Position_A = task_share.Queue(i, size = 100, thread_protect = False,
+    Position_B = task_share.Queue('i', size = 100, thread_protect = False,
                                   overwrite = False, name = 002)
 
     # Initilzing variables
-    time_list_A = task_share.Queue(i, size = 100, thread_protect = False,
+    time_list_A = task_share.Queue('i', size = 100, thread_protect = False,
                                   overwrite = False, name = 005)
+    time_list_B = task_share.Queue('i', size = 100, thread_protect = False,
+                                  overwrite = False, name = 006)
     start_time = time.ticks_ms()
-
+    counter_2 = 0
+    counter_1 = 0
     #>>> Start of Example Code From Ridgely<<<
 
     # Create a share and a queue to test function and diagnostic printouts
@@ -136,9 +152,9 @@ if __name__ == "__main__":
     # of memory after a while and quit. Therefore, use tracing only for 
     # debugging and set trace to False when it's not needed
     task1 = cotask.Task (system_1, name = 'Task_1', priority = 1, 
-                         period = 400, profile = True, trace = False)
-    task2 = cotask.Task (system_2, name = 'Task_2', priority = 2, 
-                         period = 1500, profile = True, trace = False)
+                         period = 500, profile = True, trace = False)
+    task2 = cotask.Task (system_2, name = 'Task_2', priority = 1, 
+                         period = 500, profile = True, trace = False)
     cotask.task_list.append (task1)
     cotask.task_list.append (task2)
 
@@ -149,7 +165,9 @@ if __name__ == "__main__":
     # Run the scheduler with the chosen scheduling algorithm. Quit if any 
     # character is received through the serial port
     vcp = pyb.USB_VCP ()
+    vcp.read()
     while not vcp.any ():
+    #while True:
         cotask.task_list.pri_sched ()
 
     # Empty the comm port buffer of the character(s) just pressed
