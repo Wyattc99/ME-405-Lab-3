@@ -42,11 +42,19 @@ def system_1 ():
         if time_list_A.full() == False:
             # Creates a list of Time data
             time_list_A.put(current_time_A)
-                
+            timeA = current_time_A
+            #print('Time =', timeA)
+
+            
         if Position_A.full() == False:
             # Creates a list of Time data
             Position_A.put(enc_A.get_position())
-        print('sys 1')
+            posA = enc_A.get_position()
+            #print('Position =', posA)
+        else:
+            break
+            
+        #print('sys 1')
         yield (0)
         
 def system_2 ():
@@ -64,10 +72,15 @@ def system_2 ():
         if time_list_B.full() == False:
             # Creates a list of Time data
             time_list_B.put(current_time_B)
-                
+       
+            
         if Position_B.full() == False:
             # Creates a list of Time data
             Position_B.put(enc_B.get_position())
+        else:
+            break
+            
+        #print('sys 2')
         yield (0)
 
 def user_task ():
@@ -125,17 +138,17 @@ if __name__ == "__main__":
     ## Creates the position Queue object
     Setpos_A = task_share.Queue('i', True, name = 008)
     ## Creates the position Queue object
-    Position_A = task_share.Queue('i', size = 100, thread_protect = False,
+    Position_A = task_share.Queue('i', size = 25, thread_protect = False,
                                   overwrite = False, name = 001)
 
     ## Creates the position share object
-    Position_B = task_share.Queue('i', size = 100, thread_protect = False,
+    Position_B = task_share.Queue('i', size = 25, thread_protect = False,
                                   overwrite = False, name = 002)
 
     # Initilzing variables
-    time_list_A = task_share.Queue('i', size = 100, thread_protect = False,
+    time_list_A = task_share.Queue('i', size = 25, thread_protect = False,
                                   overwrite = False, name = 005)
-    time_list_B = task_share.Queue('i', size = 100, thread_protect = False,
+    time_list_B = task_share.Queue('i', size = 25, thread_protect = False,
                                   overwrite = False, name = 006)
     start_time = time.ticks_ms()
     counter_2 = 0
@@ -143,18 +156,23 @@ if __name__ == "__main__":
     #>>> Start of Example Code From Ridgely<<<
 
     # Create a share and a queue to test function and diagnostic printouts
-    share0 = task_share.Share ('h', thread_protect = False, name = "Share 0")
-    q0 = task_share.Queue ('L', 16, thread_protect = False, overwrite = False,
-                           name = "Queue 0")
+    #share0 = task_share.Share ('h', thread_protect = False, name = "Share 0")
+    #q0 = task_share.Queue ('L', 16, thread_protect = False, overwrite = False,
+                          # name = "Queue 0")
 
     # Create the tasks. If trace is enabled for any task, memory will be
     # allocated for state transition tracing, and the application will run out
     # of memory after a while and quit. Therefore, use tracing only for 
     # debugging and set trace to False when it's not needed
+ 
     task1 = cotask.Task (system_1, name = 'Task_1', priority = 1, 
-                         period = 500, profile = True, trace = False)
+                             period = 200, profile = True, trace = False)
+ 
+    
     task2 = cotask.Task (system_2, name = 'Task_2', priority = 1, 
-                         period = 500, profile = True, trace = False)
+                             period = 200, profile = True, trace = False)
+  
+        
     cotask.task_list.append (task1)
     cotask.task_list.append (task2)
 
@@ -168,19 +186,12 @@ if __name__ == "__main__":
     vcp.read()
     while not vcp.any ():
     #while True:
-        cotask.task_list.pri_sched ()
-
-    # Empty the comm port buffer of the character(s) just pressed
-    vcp.read ()
-
-    # Print a table of task data and a table of shared information data
-    print ('\n' + str (cotask.task_list))
-    print (task_share.show_all ())
-    print (task1.get_trace ())
-    print ('\r\n')
-    
-    
-    
-    
-    
-    
+        try:
+            cotask.task_list.pri_sched ()
+            
+        except StopIteration:
+            
+            print('\nTime List A\n')
+            while time_list_A.any():
+                print(time_list_A.get())
+     

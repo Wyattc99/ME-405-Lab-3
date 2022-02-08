@@ -80,7 +80,7 @@ class MotorDriver():
         elif (duty <= 0):
                 self.t3ch1.pulse_width_percent(abs(duty))
                 self.t3ch2.pulse_width_percent(0)
-        print(duty)
+        #print(duty)
         
     def enable(self):
         """!
