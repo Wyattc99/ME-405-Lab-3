@@ -30,7 +30,7 @@ time_count = []
 ticks = []
 
 # Begins communication with Serial Port COM27
-with serial.Serial('COM27', 115200) as s_port:
+with serial.Serial('COM6', 115200) as s_port:
         time.sleep(.1)
         # CTRL-C
         s_port.write(b'\x03')
@@ -50,31 +50,40 @@ with serial.Serial('COM27', 115200) as s_port:
         # Sets Proportional Gain to 16000
         s_port.write (b'40\r')
         time.sleep(.5)
-        # Eliminates text from output buffer
-        s_port.reset_output_buffer()
-        time.sleep(.1)
+        # # Eliminates text from output buffer
+        # s_port.reset_output_buffer()
+        # time.sleep(.1)
         # Flushes buffer until prompt
-        s_port.read_until(b'A')
-        time.sleep(.1)
-        ## Writes time data as a string to 'data1'
-        time_data_A = s_port.read_until(b'P')
-        time.sleep(.1)
-        ## Writes ticks data as a string to 'data2'
-        pos_data_A = s_port.read_until(b'T')
-        time.sleep(.1)
-        ## Writes time data as a string to 'data1'
-        time_data_B = s_port.read_until(b'P')
-        time.sleep(.1)
-        ## Writes ticks data as a string to 'data2'
-        pos_data_B = s_port.read_until(b'T')
-        time.sleep(.1)
-        # Decodes both strings to ASCII
+        # s_port.read_until(b'\nTime List A\n')
+        # time.sleep(.1)
+        # ## Writes time data as a string to 'data1'
+        # time_data_A = s_port.read_until(b'\nEncoder Position A\n')
+        # time.sleep(.1)
+        # ## Writes ticks data as a string to 'data2'
+        # pos_data_A = s_port.read_until(b'\nTime List B\n')
+        # time.sleep(.1)
+        # ## Writes time data as a string to 'data1'
+        # print('Here')
+        # time_data_B = s_port.read_until(b'\nEncoder Position B\n')
+        # time.sleep(.1)
+        # ## Writes ticks data as a string to 'data2'
+        # pos_data_B = s_port.read_until(b'\nData has been collected\n')
+        # time.sleep(.1)
         
+        # # # Decodes both strings to ASCII
+        # print(time_data_A)
+        # print('------------')
+        # print(pos_data_A)
+        # print('------------')
+        # print(time_data_B)
+        # print('------------')
+        # print(pos_data_B)
         # ## Time data in a string format
         # time_data_stringA = time_data_A.decode('Ascii')
         # ## Ticks data in a string format
         # pos_data_stringA = pos_data_A.decode('Ascii')
         # print(time_data_stringA)
+        # print('-------------------')
         # print(pos_data_stringA)
         
         # # Removes extraneous characters from data_string 1

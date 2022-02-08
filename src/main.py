@@ -31,7 +31,7 @@ def system_1 ():
     """
     
     while True:
-    
+
         # Runs position control function from positioncontrol.py
         control_A.position_control()
         
@@ -61,7 +61,7 @@ def system_2 ():
     
 
     while True:
-    
+
         # Runs position control function from positioncontrol.py
         control_B.position_control()
         
@@ -194,4 +194,28 @@ if __name__ == "__main__":
             print('\nTime List A\n')
             while time_list_A.any():
                 print(time_list_A.get())
-     
+                
+            print('\nEncoder Position A\n')
+            while Position_A.any():
+                print(Position_A.get())
+                
+            print('\nTime List B\n')
+            while time_list_B.any():
+                print(time_list_B.get())
+                
+            print('\nEncoder Position B\n')
+            while Position_B.any():
+                print(Position_B.get())
+                
+            print('\nData has been collected\n')
+                
+            break
+        
+    # Empty the comm port buffer of the character(s) just pressed
+    vcp.read ()
+
+    # Print a table of task data and a table of shared information data
+    print ('\n' + str (cotask.task_list))
+    print (task_share.show_all ())
+    print (task1.get_trace ())
+    print ('\r\n')
