@@ -59,6 +59,7 @@ with serial.Serial('COM6', 115200) as s_port:
         s_port.write (b'40\r')
         #time.sleep(5)
         
+        ## This varuable represents the data read up until next set of data
         data = s_port.read_until(b'Time')      
         
         time.sleep(.1)
@@ -78,11 +79,13 @@ with serial.Serial('COM6', 115200) as s_port:
         pos_data_B = s_port.read_until(b'Data')
         time.sleep(.1)
         
-        ## Time data in a string format
+        ## Time A data in a string format
         time_data_stringA = time_data_A.decode('Ascii')
-        ## Ticks data in a string format
+        ## Ticks A data in a string format
         pos_data_stringA = pos_data_A.decode('Ascii')
+        ## Time B data in a string format
         time_data_stringB = time_data_B.decode('Ascii')
+        ## Ticks B data in a string format
         pos_data_stringB = pos_data_B.decode('Ascii')
         
         
