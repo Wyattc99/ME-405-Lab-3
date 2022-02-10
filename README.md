@@ -1,4 +1,4 @@
-# ME - 405 Lab 2
+# ME - 405 Lab 3
 ## Authors: Wyatt Conner, Jameson Spitz, Jacob Wong
 ### This is the lab 3 code for ME 405 in which we produce a position control system of a motor and encoder pair through the serial port.
  
