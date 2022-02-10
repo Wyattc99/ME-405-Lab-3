@@ -27,9 +27,13 @@ string = ''
 ## Empty Lists and string for manipulating data from serial port int values of ticks data
 ticks = []
 
+## This is an empty array used to store position data from encoder A
 pos_A_count = []
+## This is an empty array used to store position data from Timer B
 time_A_count = []
+## This is an empty array used to store position data from encoder B
 pos_B_count = []
+## This is an empty array used to store position data from Timer B
 time_B_count = []
 
 # Begins communication with Serial Port COM27
@@ -61,28 +65,28 @@ with serial.Serial('COM6', 115200) as s_port:
         # Flushes buffer until prompt
         # s_port.read_until(b'\nTime List A\n')
         time.sleep(.1)
-        # ## Writes time data as a string to 'data1'
+        ## Writes time data as a string to 'data1'
         time_data_A = s_port.read_until(b'Encoder')
         time.sleep(.1)
-        # ## Writes ticks data as a string to 'data2'
+        ## Writes ticks data as a string to 'data2'
         pos_data_A = s_port.read_until(b'Time')
         time.sleep(.1)
-        # ## Writes time data as a string to 'data1'
+        ## Writes time data as a string to 'data1'
         time_data_B = s_port.read_until(b'Encoder')
         time.sleep(.1)
-        # ## Writes ticks data as a string to 'data2'
+        ## Writes ticks data as a string to 'data2'
         pos_data_B = s_port.read_until(b'Data')
         time.sleep(.1)
         
-        # ## Time data in a string format
+        ## Time data in a string format
         time_data_stringA = time_data_A.decode('Ascii')
-        # ## Ticks data in a string format
+        ## Ticks data in a string format
         pos_data_stringA = pos_data_A.decode('Ascii')
         time_data_stringB = time_data_B.decode('Ascii')
         pos_data_stringB = pos_data_B.decode('Ascii')
         
         
-        # Converts data_string1 to list called 'time_count'
+        # Converts Time A data to intergers
         for i in time_data_stringA:
             if(i.isnumeric()):
                 string += i
@@ -93,6 +97,7 @@ with serial.Serial('COM6', 115200) as s_port:
                 except:
                     pass
                 
+        # Converts Position A data to intergers        
         for i in pos_data_stringA:
             if(i.isnumeric()):
                 string += i
@@ -102,7 +107,8 @@ with serial.Serial('COM6', 115200) as s_port:
                     string = ''
                 except:
                     pass
-                
+        
+        # Converts Time B data to intergers
         for i in time_data_stringB:
             if(i.isnumeric()):
                 string += i
@@ -113,6 +119,7 @@ with serial.Serial('COM6', 115200) as s_port:
                 except:
                     pass
                 
+        # Converts Position B data to intergers       
         for i in pos_data_stringB:
             if(i.isnumeric()):
                 string += i
