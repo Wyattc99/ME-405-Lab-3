@@ -29,56 +29,113 @@ def system_1 ():
     """!
     Task which puts things into a share and a queue.
     """
+    state = 0
     
     while True:
-
-        # Runs position control function from positioncontrol.py
-        control_A.position_control()
-        
-        ## Current time the data is collected
-        current_time_A = time.ticks_diff(time.ticks_ms(), start_time)
         
         ## Updates Current Time
-        if time_list_A.full() == False:
-            # Creates a list of Time data
-            time_list_A.put(current_time_A)
-            timeA = current_time_A
-            #print('Time =', timeA)
-
+        if(state == 0):
             
-        if Position_A.full() == False:
-            # Creates a list of Time data
-            Position_A.put(enc_A.get_position())
-            posA = enc_A.get_position()
-            #print('Position =', posA)
-        else:
-            break
+            # Runs position control function from positioncontrol.py
+            control_A.position_control()
+        
+            ## Current time the data is collected
+            current_time_A = time.ticks_diff(time.ticks_ms(), start_time)
+            
+            if current_time_A > 5000:
+                state = 1
+            
+            if time_list_A.full() == False:
+                # Creates a list of Time data
+                time_list_A.put(current_time_A)
+                
+            if Position_A.full() == False:
+                # Creates a list of Time data
+                Position_A.put(enc_A.get_position())
+            else:
+                pass
+            
+        elif state == 1:
+            print('\nTime List A\n')
+            state = 2
+            
+        elif state == 2:
+            if time_list_A.any():
+                print(time_list_A.get())
+            else:
+                state = 3
+                
+        elif state == 3:
+            print('\nEncoder Position A\n')
+            state = 4
+            
+        elif state == 4:
+            if Position_A.any():
+                print(Position_A.get())
+            else:
+                state = 5
+                
+        elif state == 5:
+            print('\nTime List B\n')
+            state = 6
+            
+        elif state == 6:
+            if time_list_B.any():
+                print(time_list_B.get())
+            else:
+                state = 7
+                
+        elif state == 7:
+            print('\nEncoder Position B\n')
+            state = 8
+            
+        elif state == 8:
+            if Position_B.any():
+                print(Position_B.get())
+            else:
+                state = 9
+                
+        elif (state == 9):
+            print('Data has been collected')
+            state = 10
+            share0.put(1)
+        elif (state == 10):
+            pass
+
             
         #print('sys 1')
         yield (0)
         
 def system_2 ():
     
-
+    state = 0
+    
     while True:
 
-        # Runs position control function from positioncontrol.py
-        control_B.position_control()
-        
-        ## Current time the data is collected
-        current_time_B = time.ticks_diff(time.ticks_ms(), start_time)
-        
-        ## Updates Current Time
-        if time_list_B.full() == False:
-            # Creates a list of Time data
-            time_list_B.put(current_time_B)
-       
+        if (state == 0):
+            # Runs position control function from positioncontrol.py
+            control_B.position_control()
             
-        if Position_B.full() == False:
-            # Creates a list of Time data
-            Position_B.put(enc_B.get_position())
-        else:
-            break
+            ## Current time the data is collected
+            current_time_B = time.ticks_diff(time.ticks_ms(), start_time)
+            
+            if current_time_B > 5000:
+                state = 1
+            
+            ## Updates Current Time
+            if time_list_B.full() == False:
+                # Creates a list of Time data
+                time_list_B.put(current_time_B)
+           
+                
+            if Position_B.full() == False:
+                # Creates a list of Time data
+                Position_B.put(enc_B.get_position())
+            else:
+                break
+            
+        elif (state == 1):
+            pass
             
         #print('sys 2')
         yield (0)
@@ -136,27 +193,27 @@ if __name__ == "__main__":
     #def __init__ (self, type_code, size, thread_protect = True, 
     #              overwrite = False, name = None):
     ## Creates the position Queue object
-    Setpos_A = task_share.Queue('i', True, name = 008)
+    Setpos_A = task_share.Queue('i', True, name = 8)
     ## Creates the position Queue object
-    Position_A = task_share.Queue('i', size = 25, thread_protect = False,
-                                  overwrite = False, name = 001)
+    Position_A = task_share.Queue('i', size = 250, thread_protect = False,
+                                  overwrite = False, name = 1)
 
     ## Creates the position share object
-    Position_B = task_share.Queue('i', size = 25, thread_protect = False,
-                                  overwrite = False, name = 002)
+    Position_B = task_share.Queue('i', size = 250, thread_protect = False,
+                                  overwrite = False, name = 2)
 
     # Initilzing variables
-    time_list_A = task_share.Queue('i', size = 25, thread_protect = False,
-                                  overwrite = False, name = 005)
-    time_list_B = task_share.Queue('i', size = 25, thread_protect = False,
-                                  overwrite = False, name = 006)
+    time_list_A = task_share.Queue('i', size = 250, thread_protect = False,
+                                  overwrite = False, name = 5)
+    time_list_B = task_share.Queue('i', size = 250, thread_protect = False,
+                                  overwrite = False, name = 6)
     start_time = time.ticks_ms()
     counter_2 = 0
     counter_1 = 0
     #>>> Start of Example Code From Ridgely<<<
 
     # Create a share and a queue to test function and diagnostic printouts
-    #share0 = task_share.Share ('h', thread_protect = False, name = "Share 0")
+    share0 = task_share.Share ('i', thread_protect = False, name = "Share 0")
     #q0 = task_share.Queue ('L', 16, thread_protect = False, overwrite = False,
                           # name = "Queue 0")
 
@@ -166,11 +223,11 @@ if __name__ == "__main__":
     # debugging and set trace to False when it's not needed
  
     task1 = cotask.Task (system_1, name = 'Task_1', priority = 1, 
-                             period = 200, profile = True, trace = False)
+                             period = 50, profile = True, trace = False)
  
     
     task2 = cotask.Task (system_2, name = 'Task_2', priority = 1, 
-                             period = 200, profile = True, trace = False)
+                             period = 50, profile = True, trace = False)
   
         
     cotask.task_list.append (task1)
@@ -184,32 +241,35 @@ if __name__ == "__main__":
     # character is received through the serial port
     vcp = pyb.USB_VCP ()
     vcp.read()
-    while not vcp.any ():
+    
+    while share0.get() != 1:
+        cotask.task_list.pri_sched()
+        
     #while True:
-        try:
-            cotask.task_list.pri_sched ()
+        # try:
+        #     cotask.task_list.pri_sched()
             
-        except StopIteration:
+        # except StopIteration:
             
-            print('\nTime List A\n')
-            while time_list_A.any():
-                print(time_list_A.get())
+        #     print('\nTime List A\n')
+        #     while time_list_A.any():
+        #         print(time_list_A.get())
                 
-            print('\nEncoder Position A\n')
-            while Position_A.any():
-                print(Position_A.get())
+        #     print('\nEncoder Position A\n')
+        #     while Position_A.any():
+        #         print(Position_A.get())
                 
-            print('\nTime List B\n')
-            while time_list_B.any():
-                print(time_list_B.get())
+        #     print('\nTime List B\n')
+        #     while time_list_B.any():
+        #         print(time_list_B.get())
                 
-            print('\nEncoder Position B\n')
-            while Position_B.any():
-                print(Position_B.get())
+        #     print('\nEncoder Position B\n')
+        #     while Position_B.any():
+        #         print(Position_B.get())
                 
-            print('\nData has been collected\n')
+        #     print('\nData has been collected\n')
                 
-            break
+        #     break
         
     # Empty the comm port buffer of the character(s) just pressed
     vcp.read ()

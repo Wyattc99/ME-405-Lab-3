@@ -24,13 +24,17 @@ time_data_B = []
 pos_data_B = []
 ## Empty Lists and string for manipulating data from serial port overall data
 string = ''
-## Empty Lists and string for manipulating data from serial port int values of time data
-time_count = []
 ## Empty Lists and string for manipulating data from serial port int values of ticks data
 ticks = []
 
+pos_A_count = []
+time_A_count = []
+pos_B_count = []
+time_B_count = []
+
 # Begins communication with Serial Port COM27
 with serial.Serial('COM6', 115200) as s_port:
+    
         time.sleep(.1)
         # CTRL-C
         s_port.write(b'\x03')
@@ -49,82 +53,85 @@ with serial.Serial('COM6', 115200) as s_port:
         time.sleep(.1)
         # Sets Proportional Gain to 16000
         s_port.write (b'40\r')
-        time.sleep(.5)
-        # # Eliminates text from output buffer
-        # s_port.reset_output_buffer()
-        # time.sleep(.1)
+        #time.sleep(5)
+        
+        data = s_port.read_until(b'Time')      
+        
+        time.sleep(.1)
         # Flushes buffer until prompt
         # s_port.read_until(b'\nTime List A\n')
-        # time.sleep(.1)
+        time.sleep(.1)
         # ## Writes time data as a string to 'data1'
-        # time_data_A = s_port.read_until(b'\nEncoder Position A\n')
-        # time.sleep(.1)
+        time_data_A = s_port.read_until(b'Encoder')
+        time.sleep(.1)
         # ## Writes ticks data as a string to 'data2'
-        # pos_data_A = s_port.read_until(b'\nTime List B\n')
-        # time.sleep(.1)
+        pos_data_A = s_port.read_until(b'Time')
+        time.sleep(.1)
         # ## Writes time data as a string to 'data1'
-        # print('Here')
-        # time_data_B = s_port.read_until(b'\nEncoder Position B\n')
-        # time.sleep(.1)
+        time_data_B = s_port.read_until(b'Encoder')
+        time.sleep(.1)
         # ## Writes ticks data as a string to 'data2'
-        # pos_data_B = s_port.read_until(b'\nData has been collected\n')
-        # time.sleep(.1)
+        pos_data_B = s_port.read_until(b'Data')
+        time.sleep(.1)
         
-        # # # Decodes both strings to ASCII
-        # print(time_data_A)
-        # print('------------')
-        # print(pos_data_A)
-        # print('------------')
-        # print(time_data_B)
-        # print('------------')
-        # print(pos_data_B)
         # ## Time data in a string format
-        # time_data_stringA = time_data_A.decode('Ascii')
+        time_data_stringA = time_data_A.decode('Ascii')
         # ## Ticks data in a string format
-        # pos_data_stringA = pos_data_A.decode('Ascii')
-        # print(time_data_stringA)
-        # print('-------------------')
-        # print(pos_data_stringA)
+        pos_data_stringA = pos_data_A.decode('Ascii')
+        time_data_stringB = time_data_B.decode('Ascii')
+        pos_data_stringB = pos_data_B.decode('Ascii')
         
-        # # Removes extraneous characters from data_string 1
-        # data_string1.strip('\n')
-        # data_string1.strip(' ')
-        # data_string1.strip('[')
-        # data_string1.strip(']')
         
-        # # Removes extraneous characters from data_string 2
-        # data_string2.strip('\n')
-        # data_string2.strip(' ')
-        # data_string2.strip('[')
-        # data_string2.strip(']')
+        # Converts data_string1 to list called 'time_count'
+        for i in time_data_stringA:
+            if(i.isnumeric()):
+                string += i
+            elif(i == '\n'):
+                try:
+                    time_A_count.append(int(string)/1000)
+                    string = ''
+                except:
+                    pass
+                
+        for i in pos_data_stringA:
+            if(i.isnumeric()):
+                string += i
+            elif(i == '\n'):
+                try:
+                    pos_A_count.append(int(string))
+                    string = ''
+                except:
+                    pass
+                
+        for i in time_data_stringB:
+            if(i.isnumeric()):
+                string += i
+            elif(i == '\n'):
+                try:
+                    time_B_count.append(int(string)/1000)
+                    string = ''
+                except:
+                    pass
+                
+        for i in pos_data_stringB:
+            if(i.isnumeric()):
+                string += i
+            elif(i == '\n'):
+                try:
+                    pos_B_count.append(int(string))
+                    string = ''
+                except:
+                    pass
         
-        # # Converts data_string1 to list called 'time_count'
-        # for i in data_string1:
-        #     if(i.isnumeric()):
-        #         string += i
-        #     elif(i == ',' or i == ']'):
-        #         time_count.append(int(string)/1000)
-        #         string = ''
-        
-        # # Converts data_string2 to list called 'ticks'
-        # for i in data_string2:
-        #     if(i.isnumeric()):
-        #         string += i
-        #     elif(i == ',' or i == ']'):
-        #         ticks.append(int(string))
-        #         string = ''
 
-# # Prints final data lists in command window
-# print('\nTime:\n', time_count)                   
-# print('\nTicks:\n', ticks)
-
-# ## Creates and formats 'Encoder Ticks vs Time' plot
-# font = {'fontname':'Times New Roman'}
-# pyplot.plot(time_count, ticks, '-ok')
-# pyplot.title('Encoder Ticks vs. Time', font)
-# pyplot.xlabel('Time, t [s]', font)
-# pyplot.ylabel('Encoder Ticks', font)
-# pyplot.grid()
+## Creates and formats 'Encoder Ticks vs Time' plot
+font = {'fontname':'Times New Roman'}
+pyplot.plot(time_A_count, pos_A_count, '-ok', time_B_count, pos_B_count, '-ob')
+pyplot.title('Encoder Ticks vs. Time', font)
+pyplot.xlabel('Time, t [s]', font)
+pyplot.ylabel('Encoder Ticks', font)
+pyplot.grid()
+pyplot.legend(['Motor 1', 'Motor 2'])
 
 if __name__ == "__main__":
     print('')
