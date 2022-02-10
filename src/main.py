@@ -1,5 +1,10 @@
 """!
 @file main.py
+    This file uses an inter-task method to run two motors in a position 
+    control loop simultaneously at a specified frequency. The program utilizes
+    shared and queued variables to collect motor data and print it once
+    the control loop is terminated.
+
     This file contains a demonstration program that runs some tasks, an
     inter-task shared variable, and a queue. The tasks don't really @b do
     anything; the example just shows how these elements are created and run.
@@ -27,8 +32,13 @@ from encoderdriver import EncoderDriver
 
 def system_1 ():
     """!
-    Task which puts things into a share and a queue.
+    Task which facilitates the motor position control method and records
+    motor 1 data in a queue. The task then prints the data which is controlled
+    by a generator.
     """
+    
+    ## State varible used to signal program whether to collect data, print
+    #  data, or terminate program.
     state = 0
     
     while True:
@@ -39,22 +49,25 @@ def system_1 ():
             # Runs position control function from positioncontrol.py
             control_A.position_control()
         
-            ## Current time the data is collected
+            ## Current time at which the position data is collected
             current_time_A = time.ticks_diff(time.ticks_ms(), start_time)
             
             if current_time_A > 5000:
                 state = 1
             
+            # Collect time list data if the queue is not full
             if time_list_A.full() == False:
                 # Creates a list of Time data
                 time_list_A.put(current_time_A)
-                
+
+            # Collect position data if the queue is not full                
             if Position_A.full() == False:
                 # Creates a list of Time data
                 Position_A.put(enc_A.get_position())
             else:
                 pass
-            
+        
+        # States to print data
         elif state == 1:
             print('\nTime List A\n')
             state = 2
@@ -94,7 +107,8 @@ def system_1 ():
                 print(Position_B.get())
             else:
                 state = 9
-                
+        
+        # Terminate program with share0 flag
         elif (state == 9):
             print('Data has been collected')
             state = 10
@@ -102,53 +116,59 @@ def system_1 ():
         elif (state == 10):
             pass
 
-            
-        #print('sys 1')
         yield (0)
         
 def system_2 ():
+    """!
+    Task which facilitates the motor position control method and records
+    motor 1 data in a queue. The task then prints the data which is controlled
+    by a generator.
+    """
     
+    ## State varible used to signal program whether to collect data, print
+    #  data, or terminate program.
     state = 0
     
     while True:
 
         if (state == 0):
+            
             # Runs position control function from positioncontrol.py
             control_B.position_control()
             
-            ## Current time the data is collected
+            ## Current time at which the position data is collected
             current_time_B = time.ticks_diff(time.ticks_ms(), start_time)
             
             if current_time_B > 5000:
                 state = 1
             
-            ## Updates Current Time
             if time_list_B.full() == False:
                 # Creates a list of Time data
                 time_list_B.put(current_time_B)
-           
-                
+            
+            # Collect Position data if queue is not full
             if Position_B.full() == False:
-                # Creates a list of Time data
                 Position_B.put(enc_B.get_position())
+                
             else:
                 break
             
         elif (state == 1):
             pass
             
-        #print('sys 2')
         yield (0)
 
 def user_task ():
+    
     """!
     Task which puts things into a share and a queue.
     """
     yield(0)
 
-# This code creates a share, a queue, and two tasks, then starts the tasks. The
-# tasks run until somebody presses ENTER, at which time the scheduler stops and
-# printouts show diagnostic information about the tasks, share, and queue.
+# This code creates important Queue and Share variables, then starts the tasks. 
+# The tasks run until the motors have reached desired position within 5 seconds
+# and data has been printed, at which time the scheduler stops and printouts 
+# show diagnostic information about the tasks, share, and queue.
 if __name__ == "__main__":
     print ('\033[2JTesting ME405 stuff in cotask.py and task_share.py\r\n'
            'Press ENTER to stop and show diagnostics.')
@@ -174,11 +194,13 @@ if __name__ == "__main__":
     ## Creates the position control object for system B
     control_B = PositionControlTask(motor_B, enc_B)
     
+    # Asking user to specify set point and gain for motor 1
     print('motor 1')
     control_A.set_point()
         
     control_A.set_gain()
     
+    # Asking user to specify set point and gain for motor 2
     print('motor 2')
     control_B.set_point()
         
@@ -190,30 +212,42 @@ if __name__ == "__main__":
     # def __init__ (self, type_code, thread_protect = True, name = None):
     
     # Queue
-    #def __init__ (self, type_code, size, thread_protect = True, 
+    # def __init__ (self, type_code, size, thread_protect = True, 
     #              overwrite = False, name = None):
+        
     ## Creates the position Queue object
     Setpos_A = task_share.Queue('i', True, name = 8)
-    ## Creates the position Queue object
+    
+    ## Creates the position of motor 1 Queue object
     Position_A = task_share.Queue('i', size = 250, thread_protect = False,
                                   overwrite = False, name = 1)
 
-    ## Creates the position share object
+    ## Creates the position of motor 2 Queue object
     Position_B = task_share.Queue('i', size = 250, thread_protect = False,
                                   overwrite = False, name = 2)
 
-    # Initilzing variables
+    ## Creates the time storage Queue for motor 1
     time_list_A = task_share.Queue('i', size = 250, thread_protect = False,
                                   overwrite = False, name = 5)
+    
+    ## Creates the time storage Queue for motor 2
     time_list_B = task_share.Queue('i', size = 250, thread_protect = False,
                                   overwrite = False, name = 6)
+    
+    ## Start time to reference relative time of data recording
     start_time = time.ticks_ms()
+    
+    ## Counter to measure number of runs through queue
     counter_2 = 0
+    
+    ## Counter to measure number of runs through queue
     counter_1 = 0
+    
     #>>> Start of Example Code From Ridgely<<<
 
-    # Create a share and a queue to test function and diagnostic printouts
+    # Create a flag as a Shared variable to signal the schedular should stop
     share0 = task_share.Share ('i', thread_protect = False, name = "Share 0")
+    
     #q0 = task_share.Queue ('L', 16, thread_protect = False, overwrite = False,
                           # name = "Queue 0")
 
@@ -230,6 +264,7 @@ if __name__ == "__main__":
                              period = 50, profile = True, trace = False)
   
         
+    # Add tasks to cotask schedular list
     cotask.task_list.append (task1)
     cotask.task_list.append (task2)
 
@@ -237,39 +272,15 @@ if __name__ == "__main__":
     # possible before the real-time scheduler is started
     gc.collect ()
 
-    # Run the scheduler with the chosen scheduling algorithm. Quit if any 
-    # character is received through the serial port
+    # Run the scheduler with the chosen scheduling algorithm. Quit if the flag
+    # variable share0 has been set to 1 by the task state machine after 
+    # printing the data.
     vcp = pyb.USB_VCP ()
     vcp.read()
     
     while share0.get() != 1:
         cotask.task_list.pri_sched()
-        
-    #while True:
-        # try:
-        #     cotask.task_list.pri_sched()
-            
-        # except StopIteration:
-            
-        #     print('\nTime List A\n')
-        #     while time_list_A.any():
-        #         print(time_list_A.get())
-                
-        #     print('\nEncoder Position A\n')
-        #     while Position_A.any():
-        #         print(Position_A.get())
-                
-        #     print('\nTime List B\n')
-        #     while time_list_B.any():
-        #         print(time_list_B.get())
-                
-        #     print('\nEncoder Position B\n')
-        #     while Position_B.any():
-        #         print(Position_B.get())
-                
-        #     print('\nData has been collected\n')
-                
-        #     break
+
         
     # Empty the comm port buffer of the character(s) just pressed
     vcp.read ()
