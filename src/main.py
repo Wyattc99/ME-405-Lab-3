@@ -5,14 +5,11 @@
     shared and queued variables to collect motor data and print it once
     the control loop is terminated.
 
-    This file contains a demonstration program that runs some tasks, an
-    inter-task shared variable, and a queue. The tasks don't really @b do
-    anything; the example just shows how these elements are created and run.
-
 @author JR Ridgely
 @author Wyatt Conner
 @author Jameson Spitz
 @author Jacob Wong
+@date   2022-Feb-09 Last updated
 @date   2021-Dec-15 JRR Created from the remains of previous example
 @copyright (c) 2015-2021 by JR Ridgely and released under the GNU
     Public License, Version 2. 
