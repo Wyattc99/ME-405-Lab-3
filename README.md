@@ -25,13 +25,13 @@ Once the data collection is complete main will print the data in a specific form
 This is outputted to the serial port where the Plotting Task can read the
 data and plot it, so the microcontroller does not have to. 
 
-![200ms Period Plot](/plts/MotorResponse200ms.png)
+![200ms Period Plot](/Plts/MotorResponse_200ms.png)
 The lowest period we were able to achieve was 200ms, which is really long
 to what we should have been able to achieve. This period was sufficent enough
 to control the position of motor as seen in the graph above. The response looks
 similar to that of a first order response that appears critically damped. 
 
-![1000ms Period Plot](/plts/MotorResponse1000ms.png)
+![1000ms Period Plot](/Plts/MotorResponse_1000ms.png)
 We continued to increase our period of the controller tasks to see how it affects
 the control of position on the motor. As we can see in the graph above a
 period of the controller is 1000ms which is 1 second. This causes issues
