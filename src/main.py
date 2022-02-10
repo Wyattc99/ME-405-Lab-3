@@ -242,7 +242,7 @@ if __name__ == "__main__":
     
     #>>> Start of Example Code From Ridgely<<<
 
-    # Create a flag as a Shared variable to signal the schedular should stop
+    ## Create a flag as a Shared variable to signal the schedular should stop
     share0 = task_share.Share ('i', thread_protect = False, name = "Share 0")
     
     #q0 = task_share.Queue ('L', 16, thread_protect = False, overwrite = False,
@@ -253,10 +253,11 @@ if __name__ == "__main__":
     # of memory after a while and quit. Therefore, use tracing only for 
     # debugging and set trace to False when it's not needed
  
+    ## Task 1 used to operate motor 1 function task
     task1 = cotask.Task (system_1, name = 'Task_1', priority = 1, 
                              period = 50, profile = True, trace = False)
  
-    
+    ## Task 2 used to operate motor 2 function task
     task2 = cotask.Task (system_2, name = 'Task_2', priority = 1, 
                              period = 50, profile = True, trace = False)
   
@@ -272,6 +273,8 @@ if __name__ == "__main__":
     # Run the scheduler with the chosen scheduling algorithm. Quit if the flag
     # variable share0 has been set to 1 by the task state machine after 
     # printing the data.
+    
+    ## Initializes VCP so that the program sees keyboard strokes.
     vcp = pyb.USB_VCP ()
     vcp.read()
     
